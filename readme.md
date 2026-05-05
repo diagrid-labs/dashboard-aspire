@@ -34,15 +34,15 @@ If you'd like to override any of those defaults, pass a `DiagridDashboardConfigu
 ```csharp
 builder.AddDiagridDashboard(configuration: new DiagridDashboardConfiguration
 {
-    Version = "latest",
-    Port = 8080,
-    ComponentsPath = "/path/to/your/components",
-    ComponentFile = "diagrid-dashboard-state.yaml",
-    AppId = "diagrid-dashboard",
+    // AppId = "diagrid-dashboard", // Optional
+    // ComponentsPath = "/path/to/your/components", // Optional, defaults to `Resources/dapr/diagrid-dashboard-components` in output dir
+    // ComponentFile = "diagrid-dashboard-state.yaml", // Optional, defaults to `diagrid-dashboard-state.yaml` in ComponentsPath
+    // Version = "latest", // Optional
+    // Port = 8080, // Optional
 });
 ```
 
-### Components
+## Components
 
 The dashboard reads its state store configuration from the component file specified by `ComponentFile`, resolved relative to `ComponentsPath`. Drop any additional Dapr component YAML files into the same folder and they'll be picked up by the container at startup.
 
@@ -97,7 +97,6 @@ builder.AddDiagridDashboard("my-dashboard");
 ```
 
 The returned `IResourceBuilder<ContainerResource>` can be chained with the usual Aspire builder extensions if you need to further customize the container.
-
 
 ## Additional Resources
 
