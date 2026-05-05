@@ -3,7 +3,6 @@
 ![NuGet Version](https://img.shields.io/nuget/v/Diagrid.Aspire.Hosting.Dashboard)
 
 
-
 ## Getting Started
 
 ### 1 - Add the integration to your AppHost project
