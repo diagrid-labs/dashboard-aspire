@@ -32,16 +32,14 @@ By default, the integration runs the `latest` image, exposes the dashboard on po
 If you'd like to override any of those defaults, pass a `DiagridDashboardConfiguration`:
 
 ```csharp
-builder.AddDiagridDashboard(
-    configuration: new DiagridDashboardConfiguration
-    {
-        Version = "latest",
-        Port = 8080,
-        ComponentsPath = "/path/to/your/components",
-        ComponentFile = "diagrid-dashboard-state.yaml",
-        AppId = "diagrid-dashboard",
-    }
-);
+builder.AddDiagridDashboard(configuration: new DiagridDashboardConfiguration
+{
+    Version = "latest",
+    Port = 8080,
+    ComponentsPath = "/path/to/your/components",
+    ComponentFile = "diagrid-dashboard-state.yaml",
+    AppId = "diagrid-dashboard",
+});
 ```
 
 ### Components
