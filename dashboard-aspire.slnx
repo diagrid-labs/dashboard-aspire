@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/Test/">
+    <Project Path="TestApi/TestApi.csproj" />
+    <Project Path="AppHost/AppHost.csproj" />
+    <Project Path="ServiceDefaults/ServiceDefaults.csproj" />
+  </Folder>
+  <Project Path="Hosting.Dashboard/Hosting.Dashboard.csproj" />
+</Solution>
