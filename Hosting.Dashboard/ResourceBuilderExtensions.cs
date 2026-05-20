@@ -21,8 +21,8 @@ public static class ResourceBuilderExtensions
         var diagridDashboard = applicationBuilder
             .AddContainer(name, $"{ContainerImage}:{configuration.Version}")
             .WithContainerName(configuration.ContainerName)
-            .WithBindMount(configuration.ComponentsPath, "/app/components")
-            .WithEnvironment("COMPONENT_FILE", $"/app/components/{configuration.ComponentFile}")
+            .WithBindMount(configuration.ComponentsPath, DiagridDashboardConfiguration.DefaultContainerComponentsPath)
+            .WithEnvironment("COMPONENT_FILE", $"{DiagridDashboardConfiguration.DefaultContainerComponentsPath}/{configuration.ComponentFile}")
             .WithEnvironment("APP_ID", configuration.AppId)
         ;
 
