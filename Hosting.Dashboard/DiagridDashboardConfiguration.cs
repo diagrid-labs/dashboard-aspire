@@ -1,10 +1,9 @@
-using System;
 using System.IO;
 using System.Reflection;
 
 namespace Diagrid.Aspire.Hosting.Dashboard;
 
-public class DiagridDashboardConfiguration
+public record DiagridDashboardConfiguration
 {
     public const string DefaultContainerComponentsPath = "/app/components";
     
@@ -40,7 +39,6 @@ public class DiagridDashboardConfiguration
     ///     Contains the Dapr component YAML files the dashboard loads at startup. Defaults to the
     ///     <c>Resources/dapr/diagrid-dashboard-components</c> folder shipped alongside this assembly.
     /// </summary>
-    [Obsolete("This configuration value is likely to be removed in a future release.")]
     public string ComponentsPath { get; init; } = Path.Join(ExecutingPath, "Resources", "dapr", $"{DefaultName}-components");
 
     /// <summary>

@@ -16,6 +16,7 @@
 
     <ItemGroup>
         <PackageReference Include="Aspire.Hosting.AppHost" Version="13.3.4" />
+        <PackageReference Include="CopperDusk.Aspire.Hosting.Yaml" Version="0.0.1" />
     </ItemGroup>
 
     <ItemGroup>

@@ -1,5 +1,6 @@
 ﻿using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
+using CopperDusk.Aspire.Hosting.Yaml;
 
 namespace Diagrid.Aspire.Hosting.Dashboard;
 
@@ -7,6 +8,27 @@ public static class ResourceBuilderExtensions
 {
     private const string ContainerImage = "ghcr.io/diagridio/diagrid-dashboard";
 
+    public static IResourceBuilder<ContainerResource> AddDiagridDashboard(
+        this IDistributedApplicationBuilder applicationBuilder,
+        IResourceBuilder<YamlSourceResource> stateComponent,
+        string name = "diagrid-dashboard",
+        DiagridDashboardConfiguration? configuration = null
+    )
+    {
+        configuration ??= new();
+        
+        var componentsGroup = applicationBuilder.AddYamlFileGroup($"{name}-components", [ stateComponent ]);
+
+        // note: Override component configuration so that we now find the prepared YAML.
+        configuration = configuration with
+        {
+            ComponentsPath = componentsGroup.Resource.Path,
+            ComponentFile = stateComponent.Resource.FileName,
+        };
+        
+        return applicationBuilder.AddDiagridDashboard(name, configuration);
+    }
+    
     public static IResourceBuilder<ContainerResource> AddDiagridDashboard(
         this IDistributedApplicationBuilder applicationBuilder,
         string name = "diagrid-dashboard",
