@@ -22,7 +22,7 @@ public static class ResourceBuilderExtensions
         // note: Override component configuration so that we now find the prepared YAML.
         configuration = configuration with
         {
-            ComponentsPath = componentsGroup.Resource.Path,
+            ComponentsPath = componentsGroup.Resource.ContainerPath,
             ComponentFile = stateComponent.Resource.FileName,
         };
         
