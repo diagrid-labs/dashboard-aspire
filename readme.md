@@ -83,4 +83,4 @@ The returned `IResourceBuilder<ContainerResource>` can be chained with the usual
 
 ## Additional Resources
 
-See the [Diagrid Dashboard repository](https://github.com/diagridio/diagrid-dashboard) for more on the dashboard itself.
+See the [Diagrid Dashboard](https://docs.diagrid.io/develop/local-development/dev-dashboard/) page in the Diagrid docs for more on the dashboard itself.
