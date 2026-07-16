@@ -57,19 +57,52 @@ For the full list of supported component types, see the [Dapr components referen
 
 ## 3 - Configuring the Dashboard
 
-By default, the integration runs the `latest` image and lets Aspire allocate an ephemeral host port for the dashboard's HTTP endpoint.
-
-To override any of those, pass a `DiagridDashboardConfiguration`:
+`DiagridDashboardConfiguration` holds the options that apply no matter how the dashboard is launched:
 
 ```csharp
 builder.AddDiagridDashboard(stateComponent, configuration: new DiagridDashboardConfiguration
 {
-    // AppId = "diagrid-dashboard",         // Optional, Dapr APP_ID inside the container
-    // ContainerName = "diagrid-dashboard", // Optional
-    // Version = "latest",                  // Optional, image tag
-    // Port = 8080,                         // Optional, fixed host port
+    // AppId = "diagrid-dashboard",         // Optional, Dapr APP_ID
+    // Port = 8080,                         // Optional, fixed host port (ephemeral by default)
+    // ComponentsPath / ComponentFile are resolved automatically from the state component.
 });
 ```
+
+## 4 - Choosing how the Dashboard runs
+
+How the dashboard is launched is a separate concern from its shared configuration, expressed through an
+`IDiagridDashboardLaunchMode`. Two implementations ship in the box.
+
+### Container (default)
+
+If you pass no launch mode, the dashboard runs as a container. Container-specific knobs (image, tag, container name)
+live on `ContainerLaunchMode`:
+
+```csharp
+builder.AddDiagridDashboard(stateComponent, launchMode: new ContainerLaunchMode
+{
+    // Image = "ghcr.io/diagridio/diagrid-dashboard", // Optional
+    // Version = "latest",                            // Optional, image tag
+    // ContainerName = "diagrid-dashboard",           // Optional, defaults to the resource name
+});
+```
+
+### Local executable
+
+To run the dashboard as a process on the host instead — no container runtime involved — pass an `ExecutableLaunchMode`
+pointing at the binary. It reads the same component YAML, but from the host perspective (so connection strings resolve
+against `localhost` rather than in-cluster names):
+
+```csharp
+builder.AddDiagridDashboard(stateComponent, launchMode: new ExecutableLaunchMode("/path/to/diagrid-dashboard")
+{
+    // WorkingDirectory = ".",              // Optional
+    // PortEnvironmentVariable = "PORT",    // Optional, if the binary takes its listen port from the environment
+});
+```
+
+Both modes present the same shared options and both hand back an `IResourceBuilder<IDiagridDashboardResource>`, so the
+rest of your AppHost (`WaitFor`, `GetEndpoint`, `WithEnvironment`, ...) works identically regardless of which you choose.
 
 ### Custom Naming
 
@@ -78,8 +111,6 @@ If you want to run more than one dashboard instance, or you'd just prefer a diff
 ```csharp
 builder.AddDiagridDashboard(stateComponent, name: "my-dashboard");
 ```
-
-The returned `IResourceBuilder<ContainerResource>` can be chained with the usual Aspire builder extensions if you need to further customize the container.
 
 ## Additional Resources
 

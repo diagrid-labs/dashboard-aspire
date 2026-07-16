@@ -1,4 +1,4 @@
-﻿using Aspire.Hosting;
+using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 using CopperDusk.Aspire.Hosting.Yaml;
 
@@ -6,53 +6,61 @@ namespace Diagrid.Aspire.Hosting.Dashboard;
 
 public static class ResourceBuilderExtensions
 {
-    private const string ContainerImage = "ghcr.io/diagridio/diagrid-dashboard";
-
-    public static IResourceBuilder<ContainerResource> AddDiagridDashboard(
+    /// <summary>
+    ///     Adds the Diagrid Dashboard, sourcing its Dapr component from the supplied <paramref name="stateComponent"/>.
+    ///     <br /><br />
+    ///     The component is materialized into a file group and the launch mode is asked for the perspective-correct
+    ///     copy to read, so the dashboard sees connection strings that resolve from wherever it actually runs.
+    /// </summary>
+    /// <param name="applicationBuilder">The distributed application being built.</param>
+    /// <param name="stateComponent">The Dapr state component the dashboard should load.</param>
+    /// <param name="name">Resource name for the dashboard.</param>
+    /// <param name="configuration">Shared, launch-mode-agnostic options.</param>
+    /// <param name="launchMode">How to run the dashboard. Defaults to <see cref="ContainerLaunchMode"/>.</param>
+    public static IResourceBuilder<IDiagridDashboardResource> AddDiagridDashboard(
         this IDistributedApplicationBuilder applicationBuilder,
         IResourceBuilder<YamlSourceResource> stateComponent,
-        string name = "diagrid-dashboard",
-        DiagridDashboardConfiguration? configuration = null
+        string name = DiagridDashboardConfiguration.DefaultName,
+        DiagridDashboardConfiguration? configuration = null,
+        DiagridDashboardLaunchMode? launchMode = null
     )
     {
         configuration ??= new();
-        
+        launchMode ??= new ContainerLaunchMode();
+
         var componentsGroup = applicationBuilder.AddYamlFileGroup($"{name}-components", [ stateComponent ]);
 
-        // note: Override component configuration so that we now find the prepared YAML.
+        // note: Override component configuration so that we now find the prepared YAML, from the launch mode's perspective.
         configuration = configuration with
         {
-            ComponentsPath = componentsGroup.Resource.ContainerPath,
+            ComponentsPath = launchMode.ResolveComponentsPath(componentsGroup),
             ComponentFile = stateComponent.Resource.FileName,
         };
-        
-        return applicationBuilder.AddDiagridDashboard(name, configuration);
+
+        return applicationBuilder.AddDiagridDashboard(name, configuration, launchMode);
     }
-    
-    public static IResourceBuilder<ContainerResource> AddDiagridDashboard(
+
+    /// <summary>
+    ///     Adds the Diagrid Dashboard using a pre-resolved <paramref name="configuration"/>.
+    /// </summary>
+    /// <param name="applicationBuilder">The distributed application being built.</param>
+    /// <param name="name">Resource name for the dashboard.</param>
+    /// <param name="configuration">Shared, launch-mode-agnostic options.</param>
+    /// <param name="launchMode">How to run the dashboard. Defaults to <see cref="ContainerLaunchMode"/>.</param>
+    public static IResourceBuilder<IDiagridDashboardResource> AddDiagridDashboard(
         this IDistributedApplicationBuilder applicationBuilder,
-        string name = "diagrid-dashboard",
-        DiagridDashboardConfiguration? configuration = null
+        string name = DiagridDashboardConfiguration.DefaultName,
+        DiagridDashboardConfiguration? configuration = null,
+        DiagridDashboardLaunchMode? launchMode = null
     )
     {
-        configuration ??= new()
-        {
-            ContainerName = name,
-        };
-        
-        var diagridDashboard = applicationBuilder
-            .AddContainer(name, $"{ContainerImage}:{configuration.Version}")
-            .WithContainerName(configuration.ContainerName)
-            .WithBindMount(configuration.ComponentsPath, DiagridDashboardConfiguration.DefaultContainerComponentsPath)
-            .WithEnvironment("COMPONENT_FILE", $"{DiagridDashboardConfiguration.DefaultContainerComponentsPath}/{configuration.ComponentFile}")
-            .WithEnvironment("APP_ID", configuration.AppId)
-        ;
+        configuration ??= new();
+        launchMode ??= new ContainerLaunchMode();
 
-        if (configuration.Port.HasValue)
-            diagridDashboard.WithHttpEndpoint(configuration.Port, 8080);
-        else
-            diagridDashboard.WithHttpEndpoint(targetPort: 8080);
-
-        return diagridDashboard;
+        // note: discovery is launch-mode agnostic — the same daprd instances are projected either way, and Aspire renders
+        // each sidecar URL from the dashboard's own perspective (container or host), so this belongs on the shared path.
+        return launchMode
+            .Launch(applicationBuilder, name, configuration)
+            .WithDiscoveredDaprApps(applicationBuilder);
     }
 }

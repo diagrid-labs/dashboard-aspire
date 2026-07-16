@@ -1,8 +1,9 @@
 using Aspire.Hosting.Yarp;
 using Diagrid.Aspire.Hosting.Dashboard;
-using Diagrid.Aspire.Test.AppHost;
 
 var builder = DistributedApplication.CreateBuilder(args);
+
+builder.AddDapr();
 
 var username = builder.AddParameter("username", "local");
 var password = builder.AddParameter("password", "zxczxc123", true);
@@ -10,11 +11,21 @@ var password = builder.AddParameter("password", "zxczxc123", true);
 var postgres = builder.AddPostgres("postgres", username, password, port: 5432);
 var daprStateDatabase = postgres.AddDatabase("dapr-state", "dapr_state");
 
-// note: This `AddDaprPostgresStateComponent` is a sample of some things we're thinking about...
-var dashboardStateComponent = builder.AddDaprPostgresStateComponent(daprStateDatabase);
+// A dapr-ized app so the dashboard has a sidecar to discover.
+builder
+    .AddContainer("myapp", "docker.io/traefik/whoami")
+    .WithHttpEndpoint(targetPort: 80)
+    .WithDaprSidecar()
+;
+
+builder
+    .AddContainer("myapp2", "docker.io/traefik/whoami")
+    .WithHttpEndpoint(targetPort: 80)
+    .WithDaprSidecar()
+;
 
 var diagridDashboard = builder
-    .AddDiagridDashboard(dashboardStateComponent)
+    .AddDiagridDashboard()
     .WaitFor(daprStateDatabase);
 
 builder.AddYarp("proxy")
